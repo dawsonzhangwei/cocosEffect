@@ -1,0 +1,49 @@
+// Effect Syntax Guide: https://github.com/cocos-creator/docs-3d/blob/master/zh/material-system/effect-syntax.md
+
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: curved-vs:vert
+      frag: curved-fs:frag
+      properties:
+        mainTexture:    { value: white }
+        mainColor:      { value: [1, 1, 1, 1], editor: { type: color } }
+}%
+
+CCProgram curved-vs %{
+  precision mediump float;
+  #include <cc-global>
+  #include <cc-local>
+  #include <input>
+
+  out vec2 v_uv
+  uniform TexCoords {
+    vec4 tilingOffset;
+  }
+  
+  highp vec4 vert() {
+    highp vec4 position;
+    CCVertInput(position);
+
+    return cc_matViewProj * cc_matWorld * position
+  }
+}%
+
+CCProgram curved-fs %{
+  precision highp float;
+  #include <output>
+  #include <cc-fog-fs>
+
+  in vec2 v_uv;
+  uniform sampler2D mainTexture;
+
+  uniform Constant {
+    vec4 mainColor;
+  };
+
+  vec4 frag () {
+    vec4 col = mainColor * texture(mainTexture, v_uv);
+    CC_APPLY_FOG(col);
+    return CCFragOutput(col);
+  }
+}%
