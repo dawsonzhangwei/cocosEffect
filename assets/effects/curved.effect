@@ -25,6 +25,8 @@ CCProgram curved-vs %{
     highp vec4 position;
     CCVertInput(position);
 
+    v_uv = a_texCoord * tilingOffset.xy + tilingOffset.zw
+
     return cc_matViewProj * cc_matWorld * position
   }
 }%
