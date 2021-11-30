@@ -23,6 +23,12 @@
     }
   ],
   "_props": [
-    {}
+    {
+      "mainTexture": {
+        "__uuid__": "9e9f5207-438b-46a0-bff9-d1ecf33c6f97@6c48a",
+        "__expectedType__": "cc.Texture2D"
+      },
+      "axis": 1
+    }
   ]
 }

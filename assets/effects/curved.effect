@@ -6,8 +6,11 @@ CCEffect %{
     - vert: curved-vs:vert
       frag: curved-fs:frag
       properties:
+        tilingOffset:   { value: [1, 1, 0, 0] }
         mainTexture:    { value: white }
         mainColor:      { value: [1, 1, 1, 1], editor: { type: color } }
+        curvature:      { value: 0.001 }
+        axis:           { value: 2 }
 }%
 
 CCProgram curved-vs %{
@@ -15,19 +18,40 @@ CCProgram curved-vs %{
   #include <cc-global>
   #include <cc-local>
   #include <input>
+  #include <cc-fog-vs>
 
-  out vec2 v_uv
+  out vec2 v_uv;
   uniform TexCoords {
     vec4 tilingOffset;
-  }
+  };
+
+  uniform Param {
+    float curvature;
+    int axis;
+  };
   
   highp vec4 vert() {
     highp vec4 position;
     CCVertInput(position);
+    CC_TRANSFER_FOG(position);
 
-    v_uv = a_texCoord * tilingOffset.xy + tilingOffset.zw
+    vec4 viewPos = cc_matWorld * position;
+    vec4 offset = viewPos - cc_cameraPos;
+  
+    if (axis == 1)
+      offset = vec4(0.0, (offset.x * offset.x) * - curvature, 0.0, 0.0);
+    else if (axis == 2)
+      offset = vec4(0.0, (offset.y * offset.y) * - curvature, 0.0, 0.0);
+    else if (axis == 3)
+      offset = vec4(0.0, (offset.z * offset.z) * - curvature, 0.0, 0.0);
+    else 
+      offset = vec4(0.0, (offset.x * offset.x + offset.y * offset.y) * - curvature, 0.0, 0.0);
 
-    return cc_matViewProj * cc_matWorld * position
+    viewPos += offset;
+
+    v_uv = a_texCoord * tilingOffset.xy + tilingOffset.zw;
+
+    return cc_matViewProj * viewPos;
   }
 }%
 
